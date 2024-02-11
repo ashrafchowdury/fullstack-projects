@@ -3,7 +3,6 @@ import { Response, Request } from "express";
 import cache from "../libs/cache/redis.js";
 import bcrypt from "bcrypt";
 import { createJwtToken } from "../libs/utils.js";
-import passport from 'passport-github';
 
 export const getUser = async (req: Request, res: Response) => {
   const { _id } = req.userId;
@@ -76,8 +75,12 @@ export const logout = async (req: Request, res: Response) => {
   }
 };
 
-// OAuths
+// social auth return routes
 
-export const github = async (req: Request, res: Response) => {
+export const failure = async (req: Request, res: Response) => {
+  res.status(400).end("Failed to login through this, please try anoher way");
+};
 
+export const success = async (req: Request, res: Response) => {
+  res.status(201).json("User logedin successfilly");
 };
