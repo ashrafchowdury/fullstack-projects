@@ -24,6 +24,7 @@ const userModel = new mongoose.Schema({
       bookmark: { type: mongoose.Types.ObjectId, ref: "Posts" },
     },
   ],
+  refreshToken: { type: String },
 });
 
 const User = mongoose.model("User", userModel);

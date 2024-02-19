@@ -1,20 +1,16 @@
-import ShareLink from "@/components/link/share-link";
 import PostComponent from "@/components/posts/post-component";
 import PostShare from "@/components/posts/post-share";
+import AppLayout from "@/components/layout/app";
 
 const Home = () => {
   return (
-    <>
-      <main className="lg:w-[1025px] mx-auto border-x min-h-screen max-h-max px-3 py-5">
-        <PostShare />
+    <AppLayout>
+      <PostShare />
 
-        <article className="mt-12">
-          <PostComponent />
-        </article>
-
- 
-      </main>
-    </>
+      <article className="mt-12">
+        <PostComponent />
+      </article>
+    </AppLayout>
   );
 };
 
