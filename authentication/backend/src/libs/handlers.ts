@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 
-export const async_handler =
-  (request_handler: RequestHandler) =>
-  (req: Request, res: Response, next: NextFunction) => {
+export const async_handler = (request_handler: RequestHandler) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(request_handler(req, res, next)).catch((err) => next(err));
   };
+};
 
 export class ApiError extends Error {
   statusCode: number;
@@ -31,17 +31,5 @@ export class ApiError extends Error {
     } else {
       Error.captureStackTrace(this, this.constructor);
     }
-  }
-}
-
-export class ApiResponse {
-  statusCode: number;
-  data: any;
-  message: string;
-
-  constructor(statusCode: number, data?: any, message?: string) {
-    this.statusCode = statusCode;
-    this.data = data;
-    this.message = message;
   }
 }
