@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo '🏗️ Checking: Code Formate & Lint before commit'
+
+# Check Lint standards
+pnpm exec lint-staged ||
+(
+    echo '❌ Lint Check Failed. ❌
+         Run pnpm exec lint-staged, add changes and try commit again.';
+    false;
+)
+
+# Check Prettier standards
+npm run check-format ||
+(
+    echo '❌ Prettier Check Failed. ❌
+         Run npm run format, add changes and try commit again.';
+    false;
+)
+
+# If everything passes... Now we can commit
+echo '✅ Time To Push The Code ✅'
+
+
