@@ -26,7 +26,7 @@ import useFile from "@/utils/hooks/useFile";
 import { ImagePlus } from "lucide-react";
 const Login = () => {
   const { singup, login, forget, isLoading } = useAuth();
-  const { filePreview, loadFile, file, setFile, setFilePreview } = useFile();
+  const { filePreview, loadFile, file } = useFile();
 
   const handleForms = async (
     e: FormEvent<HTMLFormElement>,
@@ -41,6 +41,7 @@ const Login = () => {
     if (value.some((data) => !data)) {
       toast.error("Please fill up all the fildes");
     } else {
+      form.length === 3 && value.push(file as any);
       authFunction(...(value as string[]));
     }
   };
@@ -68,7 +69,7 @@ const Login = () => {
             </CardHeader>
             <CardContent className="w-full">
               <form
-                onSubmit={(e) => handleForms(e, [0, 1, 2, 3], singup)}
+                onSubmit={(e) => handleForms(e, [1, 2, 3], singup)}
                 className="space-y-3"
               >
                 <div className="group/item w-[95px] h-[90px] rounded-md overflow-hidden border relative !space-y-0">
@@ -95,7 +96,7 @@ const Login = () => {
                   <Label htmlFor="name">Name</Label>
                   <PersonIcon className="w-4 h-4 absolute bottom-[11px] left-[10px]" />
                   <Input
-                    type="text"
+                    type="name"
                     placeholder="Username"
                     className="px-8"
                     required

@@ -1,6 +1,8 @@
 import { ApiError, async_handler } from "../libs/handlers.js";
 import { uploadOnCloud } from "../libs/cloudinary.js";
+import { COOKIE_OPTIONS } from "../libs/constants.js";
 import User from "../models/user.models.js";
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async (user: any) => {
   try {
@@ -20,23 +22,27 @@ export const register_user = async_handler(async (req, res) => {
   const { email, username, password } = req.body;
   const avatarLocalPath = req.files[0]?.path;
 
-  if (!avatarLocalPath) {
-    throw new ApiError(400, "Avatar required!");
-  }
-  const avatar_url = await uploadOnCloud(avatarLocalPath);
+  try {
+    if (!avatarLocalPath) {
+      res.status(400).end("Avatar required!");
+    }
+    const avatar_url = await uploadOnCloud(avatarLocalPath);
 
-  if (!avatar_url) {
-    throw new ApiError(400, "Failed to upload Avatar!");
-  }
-  const create_user = await User.create({
-    avatar: avatar_url.url,
-    username: username.toLowerCase(),
-    email,
-    password,
-  });
-  const { password: new_password, refreshToken, ...rest } = create_user;
+    if (!avatar_url) {
+      throw new ApiError(400, "Failed to upload Avatar!");
+    }
+    const create_user = await User.create({
+      avatar: avatar_url.url,
+      username: username.toLowerCase(),
+      email,
+      password,
+    });
+    const { password: new_password, refreshToken, ...rest } = create_user;
 
-  return res.status(201).json({ rest });
+    return res.status(201).json({ rest });
+  } catch (error) {
+    res.status(500).end("encounter error while trying to register user");
+  }
 });
 
 export const login = async_handler(async (req, res) => {
@@ -69,14 +75,10 @@ export const login = async_handler(async (req, res) => {
 
   const { password: loginPassowrd, refreshToken: ignoreToken, ...rest } = user;
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
   res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, COOKIE_OPTIONS)
+    .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
     .json(rest);
 });
 
@@ -90,13 +92,49 @@ export const logout = async_handler(async (req, res) => {
     },
     { new: true }
   );
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-  return res
+
+  res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", COOKIE_OPTIONS)
+    .clearCookie("refreshToken", COOKIE_OPTIONS)
     .json({ message: "user has been logged out successfully" });
+});
+
+export const generateRefreshToken = async_handler(async (req, res) => {
+  try {
+    const incommingRefreshToken =
+      req.cookies.refreshToken || req.body.refreshToken;
+
+    if (!incommingRefreshToken) {
+      throw new ApiError(401, "Invalid user with invalid refresh token");
+    }
+
+    const decodedUserId: any = jwt.verify(
+      incommingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+
+    const user = await User.findById(decodedUserId?._id);
+
+    if (!user) {
+      throw new ApiError(400, "Invalid user creadentials");
+    }
+
+    const { accessToken, refreshToken } =
+      await generateAccessAndRefreshToken(user);
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    res
+      .status(200)
+      .cookie("accessToken", accessToken, COOKIE_OPTIONS)
+      .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
+      .json({ accessToken, refreshToken });
+  } catch (error) {
+    throw new ApiError(
+      400,
+      "Something went wrong while triyng to generate refresh token"
+    );
+  }
 });

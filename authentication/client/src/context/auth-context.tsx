@@ -40,15 +40,28 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
     avatar: File
   ) => {
     try {
-      const response = await axios.post("/api/v1/auth/signup", {
-        username,
-        email,
-        password,
-        avatar,
-      });
-
-      Cookies.set("authId", response.data.token, { secure: true });
-      setUid(response.data.token);
+      if (!username || !email || !password || !avatar.name) {
+        toast.error(`Please fill up all the fildes`);
+        return;
+      }
+      const response = await axios.post(
+        "/api/auth/v1/register",
+        {
+          username,
+          email,
+          password,
+          avatar,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(response);
+      // Cookies.set("authId", response.data.token, { secure: true });
+      // setUid(response.data.token);
+      // navigate("/");
     } catch (error) {
       console.log(error);
       toast(`Failed to signup, try again`);
@@ -71,7 +84,7 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
   };
 
   const forget = async (email: string) => {
-    const response = await axios.post("/api/forget", {
+    await axios.post("/api/forget", {
       email: email,
     });
   };

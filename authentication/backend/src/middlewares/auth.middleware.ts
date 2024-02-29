@@ -63,6 +63,6 @@ export const signup_middleware = async_handler(async (req, res, next) => {
   // if (!validator.isStrongPassword(password)) {
   //   return end_response(res, 400, "Invalid password: please a strong password");
   // }
-
+  console.log("finished sing middleware");
   next();
 });
