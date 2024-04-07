@@ -1,8 +1,10 @@
 import { ApiError, async_handler } from "../libs/handlers.js";
-import { uploadOnCloud } from "../libs/cloudinary.js";
+import { uploadFileOnCloud } from "../libs/cloudinary.js";
 import { COOKIE_OPTIONS } from "../libs/constants.js";
 import User from "../models/user.models.js";
 import jwt from "jsonwebtoken";
+import { join } from "path";
+import { unlink } from "fs/promises";
 
 const generateAccessAndRefreshToken = async (user: any) => {
   try {
@@ -19,20 +21,12 @@ const generateAccessAndRefreshToken = async (user: any) => {
 };
 
 export const register_user = async_handler(async (req, res) => {
-  const { email, username, password } = req.body;
-  const avatarLocalPath = req.files[0]?.path;
+  const { email, username, password, avatar_url } = req.body;
 
   try {
-    if (!avatarLocalPath) {
-      res.status(400).end("Avatar required!");
-    }
-    const avatar_url = await uploadOnCloud(avatarLocalPath);
 
-    if (!avatar_url) {
-      throw new ApiError(400, "Failed to upload Avatar!");
-    }
     const create_user = await User.create({
-      avatar: avatar_url.url,
+      avatar: avatar_url,
       username: username.toLowerCase(),
       email,
       password,
@@ -42,6 +36,26 @@ export const register_user = async_handler(async (req, res) => {
     return res.status(201).json({ rest });
   } catch (error) {
     res.status(500).end("encounter error while trying to register user");
+  }
+});
+
+export const uploadFile = async_handler(async (req, res) => {
+  const relativeUploadDir = "/temp";
+  const uploadDir = join(process.cwd(), "public", relativeUploadDir);
+  try {
+    const file = await req.file;
+
+    if (!file) {
+      res.status(400).end("Avatar required!");
+    }
+
+    const upload = await uploadFileOnCloud(`${uploadDir}/${file.filename}`);
+
+    await unlink(`${uploadDir}/${file.filename}`); // delete the file from temporary folder
+
+    return res.status(201).json(upload);
+  } catch (error) {
+    console.log("uploadFile", error);
   }
 });
 

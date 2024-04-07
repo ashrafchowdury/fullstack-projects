@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
-import fs from "fs";
+import dotenv from "dotenv";
+dotenv.config();
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -7,21 +8,29 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const uploadOnCloud = async (localFilePath: string) => {
+export const uploadFileOnCloud = async (file: string) => {
   try {
-    if (!localFilePath) return null;
+    if (!file) return null;
 
-    const response = await cloudinary.uploader.upload(localFilePath, {
+    const response = await cloudinary.uploader.upload(file, {
       resource_type: "auto",
     });
+
     return response;
   } catch (error) {
-    fs.unlinkSync(localFilePath); // remove the locally saved file
+    console.log(error);
+    return { error: "Encounter error while trying to upload the file" };
+  }
+};
 
-    console.log(
-      "Encounter error while trying to upload the file:",
-      error.message
-    );
-    return null;
+export const deleteFileFromCloud = async (id: string) => {
+  try {
+    if (!id) return null;
+
+    const response = await cloudinary.uploader.destroy(id);
+
+    return response;
+  } catch (error) {
+    return { error: "Encounter error while trying to delete the file" };
   }
 };

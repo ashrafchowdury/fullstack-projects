@@ -40,17 +40,23 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
     avatar: File
   ) => {
     try {
+      let imageURL;
+      if (avatar.name) {
+        imageURL = await update_avatar(avatar);
+      }
+
       if (!username || !email || !password || !avatar.name) {
         toast.error(`Please fill up all the fildes`);
         return;
       }
+
       const response = await axios.post(
         "/api/auth/v1/register",
         {
           username,
           email,
           password,
-          avatar,
+          avatar: imageURL,
         },
         {
           headers: {
@@ -65,6 +71,29 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
     } catch (error) {
       console.log(error);
       toast(`Failed to signup, try again`);
+    }
+  };
+
+  const update_avatar = async (file: File) => {
+    try {
+      const data = new FormData();
+      data.set("file", file as File);
+
+      const upload = await fetch("/api/auth/v1/upload-file", {
+        method: "POST",
+        body: data,
+      });
+
+      if (!upload.ok) {
+        toast.error("Failed to update the profile photo");
+      }
+
+      const res = await upload.json();
+
+      return res.file.secure_url;
+    } catch (error) {
+      toast.error("Failed to update the profile photo. Please try again!");
+      return null;
     }
   };
 
@@ -124,6 +153,7 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
     setIsLoading,
     getCurrentUser,
     uid,
+    update_avatar,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -4,6 +4,7 @@ import {
   login,
   logout,
   generateRefreshToken,
+  uploadFile,
 } from "../../controllers/auth.controller.js";
 import {
   signup_middleware,
@@ -14,18 +15,12 @@ import { upload } from "../../middlewares/multer.middleware.js";
 //intilization
 const router = express.Router();
 
-router.post(
-  "/v1/register",
-  signup_middleware,
-  upload.single("avatar"),
-  register_user
-);
+router.post("/v1/register", signup_middleware, register_user);
+router.post("/v1/upload-file", upload.single("file"), uploadFile);
 router.post("/v1/login", login);
 router.post("/v1/refresh-token", generateRefreshToken);
 
 // protected routes
-router.use(authorization_middleware);
-router.get("/v1/logout", logout);
-
+router.get("/v1/logout", authorization_middleware, logout);
 
 export default router;
