@@ -1,6 +1,7 @@
 import Home from "@/pages/home/page";
 import Login from "@/pages/auth/page";
 
+
 const route = [
   {
     path: "/",

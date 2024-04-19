@@ -6,15 +6,16 @@ import { Link } from "react-router-dom";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { useAuth } from "@/context/auth-context";
 
-function Login() {
-  const { login, isLoading } = useAuth();
+function Signup() {
+  const { singup, isLoading } = useAuth();
 
   const handleForm = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const username = (e.currentTarget[0] as HTMLInputElement).value;
+    const email = (e.currentTarget[1] as HTMLInputElement).value;
     const password = (e.currentTarget[1] as HTMLInputElement).value;
 
-    login(username, password);
+    singup(username, email, password);
   };
 
   return (
@@ -22,13 +23,17 @@ function Login() {
       <section className="flex items-center justify-center py-12 w-[50%]">
         <div className="mx-auto grid w-[350px] gap-6">
           <article className="grid gap-2">
-            <h1 className="text-3xl font-bold">Login</h1>
+            <h1 className="text-3xl font-bold">Sign Up</h1>
             <p className="text-balance text-muted-foreground">
               Enter your email below to login to your account
             </p>
           </article>
 
           <form className="space-y-2" onSubmit={handleForm}>
+            <div className="space-y-1">
+              <Label htmlFor="username">Username</Label>
+              <Input type="name" placeholder="Username" required />
+            </div>
             <div className="space-y-1">
               <Label htmlFor="email">Email</Label>
               <Input type="email" placeholder="m@example.com" required />
@@ -38,12 +43,8 @@ function Login() {
               <Input id="password" type="password" required />
             </div>
 
-            <Link to="/forgot" className="text-sm underline">
-              Forgot your password?
-            </Link>
-
             <Button type="submit" className="w-full" disabled={isLoading}>
-              Login
+              Signup
             </Button>
           </form>
 
@@ -77,4 +78,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Signup;

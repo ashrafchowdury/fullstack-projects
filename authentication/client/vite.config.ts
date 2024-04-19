@@ -12,7 +12,8 @@ export default defineConfig({
   server: {
     proxy: {
       "/api/auth/v1/register": "http://localhost:5000",
-      "/api/auth/v1/upload-file": "http://localhost:5000",
+      "/api/file/v1/upload": "http://localhost:5000",
+      "/api/auth/v1/login": "http://localhost:5000",
     },
   },
 });

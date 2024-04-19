@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, createContext } from "react";
+import React, { useState, useContext, createContext } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -22,7 +22,7 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
   // function
   const getCurrentUser = async (userId: string) => {
     try {
-      const response = await axios.get("/api/v1/auth/user", {
+      const response = await axios.get("/api/auth/v1/user", {
         headers: {
           Authorization: `Bearer ${userId}`,
         },
@@ -33,19 +33,9 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
     }
   };
 
-  const singup = async (
-    username: string,
-    email: string,
-    password: string,
-    avatar: File
-  ) => {
+  const singup = async (email: string, username: string, password: string) => {
     try {
-      let imageURL;
-      if (avatar.name) {
-        imageURL = await update_avatar(avatar);
-      }
-
-      if (!username || !email || !password || !avatar.name) {
+      if (!username || !password || !email) {
         toast.error(`Please fill up all the fildes`);
         return;
       }
@@ -53,10 +43,8 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
       const response = await axios.post(
         "/api/auth/v1/register",
         {
-          username,
-          email,
-          password,
-          avatar: imageURL,
+          [username.includes("@") ? "email" : "username"]: username,
+          password: password,
         },
         {
           headers: {
@@ -64,17 +52,16 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
           },
         }
       );
-      console.log(response);
-      // Cookies.set("authId", response.data.token, { secure: true });
-      // setUid(response.data.token);
-      // navigate("/");
+
+      setUid(response.data._id);
+      navigate("/");
     } catch (error) {
       console.log(error);
       toast(`Failed to signup, try again`);
     }
   };
 
-  const update_avatar = async (file: File) => {
+  const uploadFile = async (file: File) => {
     try {
       const data = new FormData();
       data.set("file", file as File);
@@ -90,7 +77,7 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
 
       const res = await upload.json();
 
-      return res.file.secure_url;
+      return res.secure_url;
     } catch (error) {
       toast.error("Failed to update the profile photo. Please try again!");
       return null;
@@ -99,12 +86,11 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post("/api/v1/auth/login", {
+      const response = await axios.post("/api/auth/v1/login", {
         email: email,
         password: password,
       });
 
-      Cookies.set("authId", response.data.token, { secure: true });
       setUid(response.data.token);
     } catch (error) {
       console.log(error);
@@ -133,15 +119,33 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
     }
   };
 
-  //effects
-  useEffect(() => {
-    const getUid = () => Cookies.get("authId") as string;
-    const id = getUid();
-    if (Boolean(id)) {
-      getCurrentUser(id);
+  const updateProfile = async (data: any, avatar: File) => {
+    try {
+      let imageURL;
+      if (avatar.name) {
+        imageURL = await uploadFile(avatar);
+      }
+
+      const response = await axios.post(
+        "/api/auth/v1/register",
+        {
+          ...data,
+          avatar: imageURL,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setUid(response.data._id);
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+      toast(`Failed to signup, try again`);
     }
-    setUid(id);
-  }, [uid]);
+  };
 
   const value: AUTH_CONTEXT_TYPE = {
     user,
@@ -153,7 +157,8 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
     setIsLoading,
     getCurrentUser,
     uid,
-    update_avatar,
+    uploadFile,
+    updateProfile,
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

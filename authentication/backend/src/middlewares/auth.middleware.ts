@@ -46,7 +46,7 @@ export const authorization_middleware = async_handler(
 export const signup_middleware = async_handler(async (req, res, next) => {
   const { email, username, password } = req.body;
 
-  if (!email || !username || !password) {
+  if ((!email && !username) || !password) {
     throw new ApiError(400, "Invalid user info: Please fill all the fileds");
   }
 
@@ -63,6 +63,5 @@ export const signup_middleware = async_handler(async (req, res, next) => {
   // if (!validator.isStrongPassword(password)) {
   //   return end_response(res, 400, "Invalid password: please a strong password");
   // }
-  console.log("finished sing middleware");
   next();
 });
