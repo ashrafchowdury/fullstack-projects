@@ -13,9 +13,11 @@ export const useAuth = () => useContext(AuthContext)!;
 
 const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
   const [user, setUser] = useState<USER_PROFILE_TYPE>({} as USER_PROFILE_TYPE);
-  const [uid, setUid] = useState("");
+  const [uid, setUid] = useState(
+    () => localStorage.getItem("accessToken") as string
+  );
   const [isLoading, setIsLoading] = useState(false);
-
+console.log("uid", uid);
   // hooks
   const navigate = useNavigate();
 
@@ -41,10 +43,11 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
       }
 
       const response = await axios.post(
-        "/api/auth/v1/register",
+        "/api/auth/v1/signup",
         {
-          [username.includes("@") ? "email" : "username"]: username,
-          password: password,
+          email,
+          username,
+          password,
         },
         {
           headers: {
@@ -52,9 +55,9 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
           },
         }
       );
-
+      console.log(response.data);
       setUid(response.data._id);
-      navigate("/");
+      // navigate("/");
     } catch (error) {
       console.log(error);
       toast(`Failed to signup, try again`);
@@ -91,7 +94,7 @@ const AuthContextProvider: React.FC<Children> = ({ children }: Children) => {
         password: password,
       });
 
-      setUid(response.data.token);
+      localStorage.setItem("accessToken", response.data.token);
     } catch (error) {
       console.log(error);
       toast(`Failed to login, try again`);

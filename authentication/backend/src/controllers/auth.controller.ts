@@ -44,7 +44,7 @@ export const signup = async_handler(async (req, res) => {
       .status(201)
       .cookie("accessToken", accessToken, COOKIE_OPTIONS)
       .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
-      .json(rest);
+      .json({ token: accessToken });
   } catch (error) {
     res.status(500).end("encounter error while trying to register user");
   }
@@ -84,7 +84,7 @@ export const login = async_handler(async (req, res) => {
     .status(200)
     .cookie("accessToken", accessToken, COOKIE_OPTIONS)
     .cookie("refreshToken", refreshToken, COOKIE_OPTIONS)
-    .json(rest);
+    .json({ token: accessToken });
 });
 
 export const logout = async_handler(async (req, res) => {

@@ -16,7 +16,7 @@ import { maxTry } from "../../middlewares/ratelimit.middleware.js";
 //intilization
 const router = express.Router();
 
-router.post("/v1/register", maxTry, signup_middleware, signup);
+router.post("/v1/signup", signup_middleware, signup);
 router.post("/v1/login", login);
 router.post("/v1/refresh-token", generateRefreshToken);
 
